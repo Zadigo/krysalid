@@ -4,8 +4,7 @@ from typing import List
 from krysalid.html_tags import Tag
 from krysalid.parsers import Extractor
 from krysalid.queryset import QuerySet
-from krysalid.utils import keep_while
-from krysalid.utils.iteration import break_when
+from krysalid.utils.iteration import break_when, keep_while
 
 TABLE_TAGS = ['table', 'thead', 'tr', 'th', 'td', 'tbody', 'tfoot']
 

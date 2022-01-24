@@ -154,7 +154,7 @@ class TagMixin:
         # An instance of the class that extracts
         # in order to be able to access other
         # items in the HTML tree
-        from zineb.html_parser.extractors import Extractor
+        from krysalid.extractors import Extractor
         if extractor is not None:
             if not isinstance(extractor, Extractor):
                 raise TypeError('Extractor should be an instance of Extractor')

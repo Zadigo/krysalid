@@ -6,11 +6,10 @@ from html.parser import HTMLParser
 from io import StringIO, TextIOWrapper
 from typing import Union
 
-from krysalid import keep_while
 from krysalid.html_tags import Comment, ElementData, NewLine, Tag
 from krysalid.managers import Manager
 from krysalid.queryset import QuerySet
-from krysalid.utils.iteration import break_when
+from krysalid.utils.iteration import break_when, keep_while
 
 
 class Algorithm(HTMLParser):

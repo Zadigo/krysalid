@@ -6,7 +6,7 @@ import time
 
 s = time.time()
 
-f = open('tests/html_parser/test2.html', encoding='utf-8')
+f = open('tests/test1.html', encoding='utf-8')
 soup = HTMLPageParser(f)
 body = soup.manager.find_all('div')
 print(body)

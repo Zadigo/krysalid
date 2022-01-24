@@ -4,9 +4,9 @@ from typing import Pattern, Union
 
 from krysalid.html_tags import BaseTag, Tag
 from krysalid.queryset import QuerySet
-from krysalid.utils.character import HTML_TAGS, SELF_CLOSING_TAGS
 from krysalid.utils.containers import TagsIterable
-from krysalid.utils.iteration import (filter_by_name, filter_by_name_or_attrs,
+from krysalid.utils.iteration import (HTML_TAGS, SELF_CLOSING_TAGS,
+                                      filter_by_name, filter_by_name_or_attrs,
                                       filter_chunks_by_name)
 
 
