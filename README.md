@@ -1,24 +1,23 @@
 # Krysalid - HTML Page Parser
 
-xxx is a modern HTML parser with which you can query anything on a given page.
+Krysalid is a modern HTML page parser from which you can query anything on a page.
 
 ## Getting started
 
 ```python
-from krysalid.html_parser.parsers import Extactor
+from krysalid.html_parser.parsers import Extractor
 
-extractor = Extractor()
-extractor.resolve(html_page_as_string)
+with open('path/page.html', encoding='utf-8') as f:
+	extractor = Extractor(f)
 ```
 
-XXX uses Python's default `html.HTMLParser` to read  each lines of the HTML page. Before sending the string to the parser, the page is formatted to a standard format using `lxml.html_from_string`.
+Krysalid uses Python's default `html.HTMLParser` to read  each lines of the HTML page. Before sending the string to the parser, the page is formatted to a standard format using `lxml.html_from_string`.
 
-Once the string is processed, each html tag on the page is converted into a Python object which will then be used to
-run all the queries on the page.
+Once the string is processed, each html tag on the page is converted into a Python object which will then be used to run all the queries on the page.
 
 ## Querying objects on the page
 
-XXX interfaces the queries via a `Manager` class which provides a set of default functions. The `Manager` class can be subclassed and additional custom functions can be added as we'll see later on.
+Krysalid interfaces the queries via a `Manager` class which provides a set of default functions. The `Manager` class can be subclassed and additional custom functions can be added as we'll see later on.
 
 ### Manager API
 
