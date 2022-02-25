@@ -8,7 +8,7 @@ Krysalid is a modern HTML page parser from which you can query anything on a pag
 from krysalid.html_parser.parsers import Extractor
 
 with open('path/page.html', encoding='utf-8') as f:
-	extractor = Extractor(f)
+    extractor = Extractor(f)
 ```
 
 Krysalid uses Python's default `html.HTMLParser` to read  each lines of the HTML page. Before sending the string to the parser, the page is formatted to a standard format using `lxml.html_from_string`.
@@ -29,7 +29,7 @@ Returns the title of the current page.
 
 ```python
 extractor.manager.get_title
--> Example Website
+# Example Website
 ```
 
 #### Links
@@ -152,7 +152,7 @@ tags.save('myfile')
 
 #### Find
 
-Find an element within the queryset.
+Finds an element within the queryset.
 
 ```python
 tags = extractor.manager.find_all('a')
@@ -163,7 +163,7 @@ tag = tags.find('a')
 
 #### Find all
 
-Find all the elements within the queryset.
+Finds all the elements within the queryset.
 
 ```python
 queryset = extractor.manager.find_all('a')
@@ -185,7 +185,7 @@ tags = queryset.exclude('a', attrs={'id': 'test'})
 
 #### Distinct - Bêta
 
-Return elements that have a very disting attribute.
+Return elements that have a very distinct attribute.
 
 ```python
 queryset = extractor.manager.find_all('a')
@@ -196,7 +196,9 @@ tags = queryset.distinct('a', attrs={'id': 'test'})
 
 #### Values
 
-Return the data or value contained within each tag of the queryset.
+Returns the data or value contained within each tag of the queryset.
+
+When no parameter is provided, the default return value is the string contained within the tag.
 
 ```python
 queryset = extractor.manager.find_all('a')
@@ -204,6 +206,15 @@ tags = queryset.values()
 
 # List -> ['Click', 'Press', ...]
 ```
+
+```python
+queryset = extractor.manager.find_all('a')
+tags = queryset.values('id', 'class')
+
+# List -> ['some_id', 'some_class', ...]
+```
+
+This functions returns a special (ValuesQueryset)[#values-queryset] that you can see afterwards. 
 
 #### Values list -  Bêta
 
@@ -236,19 +247,27 @@ q1 = extractor.manager.find_all('div')
 q2 = extractor.lmanager.find_all('a')
 q3 = q1.union(q2)
 
-# QuerySet([<div>, <a>])
+# <QuerySet[<div>, <a>]>
+```
+
+The very same result can be obtained by doing the following:
+
+```python
+q3 = q1 & q2
+
+# <QuerySet[<div>, <a>]>
 ```
 
 #### Exists
 
-Checks if there are elements in the queryset.
+Checks whether an element exists in the queryset.
 
 ```python
 queryset = extractor.manager.find_all('div')
 if queryset.exists():
     # Do something
 
-# True or False
+# Boolean -> True or False
 ```
 
 #### Contains
@@ -260,7 +279,7 @@ queryset = extractor.manager.find_all('div')
 if queryset.contains('div'):
     # Do something
 
-# True or False
+# Boolean -> True or False
 ```
 
 #### Explain
@@ -276,7 +295,7 @@ queryset.explain()
 
 #### Generator
 
-Defers the resolution of the new query for eventual optimization purposes.
+Defers the resolution of the new query to a later stage for eventual optimization purposes.
 
 ```python
 queryset = extractor.manager.find_all('div')
@@ -285,7 +304,7 @@ links = queryset.generator('a', attrs={'id': 'test'})
 for link in links:
     # Do something
 
-# Generator -> QuerySet([<a id="test">])
+# Generator -> <QuerySet[<a id="test">]>
 ```
 
 #### Update
@@ -296,7 +315,50 @@ Update all the attribute list of the items within the queryset that goes by the 
 queryset = extractor.manager.find_all('div')
 result = queryset.update('a', 'id', 'test2')
 
-# QuerySet([<div>]) -> QuerySet([<div id="test2">])
+# <QuerySet[<div>]> -> <QuerySet[<div id="test2">]>
+```
+
+### Values Queryset
+
+The values implements addiational functionnalities for functions that returns lists as their result. It also keeps track of the relationship between a tag and the value that was parsed from it.
+
+Consider the initial queryset below. We found all the tags called `div` within the document and got all their `id` attributes as seen.
+
+```python
+queryset = extractor.manager.find_all('div').values('id')
+
+# <Queryset[[['id'], [None], ['1'], ['2'], [None], ['3'], ['4']]]>
+
+```
+
+#### Find all
+
+Find all values that respect the given constraint.
+
+```python
+queryset = queryset.find_all('3')
+
+# <Queryset[['3']]>
+```
+
+#### Flatten
+
+Get a 1-Dimensional list from the results.
+
+```python
+queryset = queryset.find_all('3')
+
+# <Queryset[[None, '1', '2', None, '3', '4']]>
+```
+
+#### Distinct
+
+Only keep distinct values within the list. Note, this changes the order of the list.
+
+```python
+queryset = queryset.find_all('3')
+
+# <Queryset[['3', '2', '1', '4', None]]>
 ```
 
 ### BaseTag API

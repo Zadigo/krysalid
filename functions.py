@@ -160,10 +160,10 @@ tags = [Tag('a'), Tag('a', attrs=[('id', 'name')]), Tag('a', attrs=[('id', 'a')]
 # q._extractor_instance = tags
 # q.resolve_query()
 
-q1 = Q(a__class__eq='Kendall')
-q2 = Q(a__id='name')
-q3 = Q(a__id='names', a__id__ne='star')
-c = q1 | q2
-c._extractor_instance = tags
-c.set_functions()
-print(c._functions)
+# q1 = Q(a__class__eq='Kendall')
+# q2 = Q(a__id='name')
+# q3 = Q(a__id='names', a__id__ne='star')
+# c = q1 | q2
+# c._extractor_instance = tags
+# c.set_functions()
+# print(c._functions)
