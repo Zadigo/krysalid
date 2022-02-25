@@ -1,4 +1,4 @@
-from typing import Generator, Iterator, List, Union
+from typing import Generator, Iterator, List, Tuple, Union
 
 from krysalid.utils.iteration import (drop_while, filter_by_name,
                                       filter_by_name_or_attrs, map_function)
@@ -35,9 +35,6 @@ class QuerySet:
         querysets.extend(obj._data)
         return self.copy(querysets)
     
-    # def __or__(self, obj):
-    #     pass
-
     @classmethod
     def copy(cls, data: Union[Generator, Iterator]):
         instance = cls()
@@ -85,12 +82,14 @@ class QuerySet:
     # def distinct(self, *attrs):
     #     """Return tags with a distinct attribute"""
 
-    def values(self, *attrs: List[str], include_fields: bool=False):
+    def values(self, *attrs: Tuple[str], include_fields: bool=False):
         """Return the string or an attribute contained 
         for each tag in the queryset. By default, if no
         attribute is provided, the string is returned
         by default"""
         contents = []
+        
+        attrs = list(attrs)
         
         if not attrs:
             attrs.append('string')

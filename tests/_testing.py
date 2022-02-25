@@ -22,7 +22,7 @@ import time
 
 
 
-from krysalid.parsers import HTMLPageParser, Algorithm
+from krysalid.parsers import HTMLPageParser
 
 # with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
 #     s = time.time()
@@ -52,3 +52,15 @@ from krysalid.parsers import HTMLPageParser, Algorithm
 
 # a = A()
 # print(a[100])
+
+import time
+
+with open('./tests/html/test1.html', mode='r', encoding='utf-8') as f:
+    h = f.read()
+    s = time.time()
+    p = HTMLPageParser(h)
+    q = p.manager.find_all('p').values('id', 'class', include_fields=True)
+    print(q)
+    e = time.time() - s
+
+print(round(e, 3))
