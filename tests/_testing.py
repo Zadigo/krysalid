@@ -22,19 +22,16 @@ import time
 
 
 
-from krysalid.parsers import HTMLPageParser
+from krysalid.parsers import HTMLPageParser, Algorithm
 
-
-with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
-    s = time.time()
-    soup = HTMLPageParser(f)
-    # tags = soup.manager.find_all('div')
-    # tag = tags.find('div')
-    # print(tags, tag)
-    e = time.time() - s
-    print(round(e, 3))
-
-
+# with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
+#     s = time.time()
+#     soup = HTMLPageParser(f)
+#     # tags = soup.manager.find_all('div')
+#     # tag = tags.find('div')
+#     # print(tags, tag)
+#     e = time.time() - s
+#     print(round(e, 3))
 
 
 # from collections.abc import Mapping

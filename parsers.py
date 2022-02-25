@@ -18,9 +18,10 @@ class Algorithm(HTMLParser):
     subclassed or used directly"""
     
     def __init__(self, extractor, **kwargs):
-        from krysalid.extractors import Extractor
-        if not isinstance(extractor, Extractor):
-            raise TypeError('Extractor should be an instance of extractor')
+        # TODO: Should be an instance of extractor?
+        # from krysalid.extractors import Extractor
+        # if not isinstance(extractor, Extractor):
+        #     raise TypeError('Extractor should be an instance of extractor')
         self.extractor = extractor
         self.index = 0
         super().__init__(**kwargs)
@@ -313,7 +314,7 @@ class Extractor:
 class HTMLPageParser(Extractor):
     """The main class used to process the html page.
     It implements the default manager for querying
-    the different items on the html page"""
+    the different items"""
     
     def __init__(self, html: Union[str, bytes, TextIOWrapper, StringIO],
                  defer_resolution: bool=False, skip_newlines: bool=False,
