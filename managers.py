@@ -1,7 +1,8 @@
+from collections import deque
 import secrets
 from functools import cached_property
 from typing import Pattern, Union
-
+from krysalid.exceptions import TagExistsError
 from krysalid.html_tags import BaseTag, Tag
 from krysalid.queryset import QuerySet
 from krysalid.utils.containers import TagsIterable
@@ -12,7 +13,7 @@ from krysalid.utils.iteration import (HTML_TAGS, SELF_CLOSING_TAGS,
 
 class Manager:
     def __init__(self, extractor):
-        from krysalid.extractors import Extractor
+        from krysalid.parsers import Extractor
         if not isinstance(extractor, Extractor):
             raise TypeError('Extractor should be an instance of Extractor')
         self._extractor_instance = extractor
@@ -21,7 +22,8 @@ class Manager:
         # opposed to doing one by one values in order
         # to improve global performance especially on
         # large files which can generate 1000s of tags
-        self._internal_values = TagsIterable(extractor)
+        self._internal_values = deque()
+        # self._internal_values = TagsIterable(extractor)
 
     def __repr__(self):
         name = f"{self._extractor_instance.__class__.__name__}{self.__class__.__name__}"
@@ -58,7 +60,7 @@ class Manager:
         try:
             return list(result)[0]
         except IndexError:
-            raise ValueError('Tag with x does not exist')
+            raise TagExistsError(name)
 
     def find_all(self, name: Union[str, list], attrs: dict = None):
         """Filter tags by name or by attributes"""
@@ -67,13 +69,18 @@ class Manager:
     
     def regex(self, name: Pattern):
         """Filter tags by using a regex pattern"""
-        results = []
-        for chunk in self._internal_values:
-            for item in chunk:
+        # results = []
+        # for chunk in self._internal_values:
+        #     for item in chunk:
+        #         matched = name.match(item.name)
+        #         if matched:
+        #             results.append(item)
+        def result_set():
+            for item in self._internal_values:
                 matched = name.match(item.name)
                 if matched:
-                    results.append(item)
-        return QuerySet.copy(results)
+                    yield item
+        return QuerySet.copy(result_set())
     
     # def download_images(self, func: Callable):
     #     """Download all the images on the page using

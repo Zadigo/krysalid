@@ -186,6 +186,11 @@ class Extractor:
         
         self.HTML_PAGE = self._get_default_prettifier(html)
         # self.HTML_PAGE = html
+        
+        # TEST: From this section onwards try
+        # to figure out the performance of the
+        # the code that runs before and after
+        # using the Python feed
         self.algorithm.feed(self.HTML_PAGE)
         self.algorithm.close()
         
@@ -198,7 +203,10 @@ class Extractor:
         # then know that these tags are the parents
         # of the current tag by definition
         
-        unclosed_tags = list(keep_while(lambda x: not x.closed, self.container))
+        # TEST: Check if not evaluating the parents
+        # by calling list on the generator improves
+        # performance
+        unclosed_tags = keep_while(lambda x: not x.closed, self.container)
         # print(tag, unclosed_tags)
 
         klass = Tag(tag, attrs, extractor=self)
@@ -315,6 +323,8 @@ class HTMLPageParser(Extractor):
 
         string = None
         if isinstance(html, TextIOWrapper):
+            # FIXME: Cannot read file if we don't
+            # pass utf-8 in open()
             string = html.read()
         elif isinstance(html, StringIO):
             string = html.read()

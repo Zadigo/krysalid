@@ -41,6 +41,11 @@ class QuerySet:
     @classmethod
     def copy(cls, data: Union[Generator, Iterator]):
         instance = cls()
+        # NOTE: Technically the evaluation of
+        # a list of items is done as late
+        # as possible in order to improve
+        # performance. Check how effective
+        # this technique is.
         instance._data = list(data)
         return instance
 
