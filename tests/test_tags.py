@@ -1,7 +1,7 @@
 import unittest
 from typing import Generator
 
-from krysalid.html_tags import BaseTag, ElementData, NewLine, Tag
+from krysalid.html_tags import BaseTag, ElementData, NewLine, Tag, Comment
 from krysalid.parsers import HTMLPageParser
 from krysalid.queryset import QuerySet
 from krysalid.tests.items import SIMPLE_HTML
@@ -11,6 +11,20 @@ class TestBaseTag(unittest.TestCase):
     def test_has_attribute(self):
         tag = Tag('a')
         self.assertFalse(tag.has_attr('id'))
+
+    @unittest.expectedFailure
+    def test_get_attribute_comment_fail(self):
+        # String values have no attrs and therefore
+        # should fail at any attempt to get one
+        # from them
+        comment = Comment('A great comment')
+        comment['id']
+        
+        newline = NewLine()
+        newline['id']
+        
+        data = ElementData('Some simple data')
+        data['src']
         
     def test_tag_equality(self):
         link1 = Tag('a')
@@ -21,27 +35,44 @@ class TestBaseTag(unittest.TestCase):
         link2 = Tag('a')
         self.assertTrue(link1 == link2)
         
+        link1 = Tag('a', attrs=[('id', 'test')])
+        link2 = Tag('a', attrs=[('id', 'test')])
+        self.assertTrue(link1 == link2)
+        
+        data1 = ElementData('Kendall is beautiful')
+        data2 = ElementData('Kendall is beautiful')
+        data3 = ElementData('Kendall is lovely')
+        self.assertTrue(data1 == data2)
+        self.assertTrue(data1 != data3)
+        
+        newline1 = NewLine()
+        newline2 = NewLine()
+        self.assertTrue(newline1 == newline2)
+        
     def test_can_change_attribute_directly(self):
         link = Tag('a')
-        link['id'] = 'test'
+        link['id'] = 'some-attribute'
         self.assertTrue(link.has_attr('id'))
         
     def test_can_delete_attribute_directly(self):
-        link = Tag('a', attrs=[('id', 'test')])
-        self.assertTrue(link.has_attr('id'))
+        link = Tag('a', attrs=[('id', 'some-attribuete')])
         del link['id']
         self.assertFalse(link.has_attr('id'))
         
-    def test_contains(self):
+    def test_contains_on_tags(self):
         # div > span + p
-        link = Tag('div')
+        div = Tag('div')
         span = Tag('span')
-        link._children = [span, Tag('p')]
-        self.assertTrue(span in link)
+        div._children = [span, Tag('p')]
+        self.assertTrue(span in div)
         
-        # TODO: Maybe when the user wants to
-        # use a string to do the comparision
-        # provide the ability to do so
+        data = ElementData('Kendall is a queen')
+        self.assertTrue('Kendall' in data)
+        
+        # TODO: Checking if something exists within
+        # a Tag instance using a string fails
+        # div._children.extend([data])
+        # print('Kendall' in div)
         
     def test_build_attrs(self):
         tag = Tag('a')
@@ -93,14 +124,19 @@ class TestBaseTag(unittest.TestCase):
         # Test that we can get the string contained
         # within the tag when we call the property
         tag = Tag('a')
-        tag._internal_data = [ElementData('something')]
-        self.assertEqual(tag.string, 'something')
+        tag._internal_data = [ElementData('Kendall is amazing')]
+        self.assertEqual(tag.string, 'Kendall is amazing')
         
         # Test that when we have multiple tags within
-        # the given tag, that we get None
-        tag._internal_data = [ElementData('something'), NewLine()]
-        self.assertEqual(tag.string, 'something')
+        # the given tag, that we get one single string
+        tag._internal_data = [ElementData('Kendall is awesome'), NewLine()]
+        self.assertEqual(tag.string, 'Kendall is awesome')
         
+        # FIXME: This should return the internal strings as one
+        # of all the child elements
+        tag._internal_data.extend([ElementData('but Kylie is better')])
+        self.assertEqual(tag.string, 'Kendall is awesome but Kylie is better')
+                
     
 class TestQueryFunctions(unittest.TestCase):
     """Test core functionnalities of query
@@ -180,19 +216,7 @@ class TestQueryFunctions(unittest.TestCase):
         self.assertEqual(len(self.measure_tag.find_all('a')), 0)
         
         
-class TestSpecialTagTests(unittest.TestCase):
-    def test_newline(self):
-        # These tags shoudld always return
-        # false on has_attr and None on
-        # get_attr
-        newline = NewLine(extractor=None)
-        self.assertFalse(newline.has_attr('id'))
-        self.assertIsNone(newline.get_attr('id'))
-        
-        element_data = ElementData('Kendall')
-        self.assertFalse(element_data.has_attr('id'))
-        self.assertIsNone(element_data.get_attr('id'))
-                
+class TestSpecialTagTests(unittest.TestCase):                
     def test_element_data(self):
         element_data = ElementData('Kendall')
         # Assert that we can compare a raw
@@ -207,8 +231,8 @@ class TestSpecialTagTests(unittest.TestCase):
         self.assertEqual(data1 + data2, 'KendallJenner')
         
     def test_string_tag_returns_empty_queryset(self):
-        string_tag = ElementData('Kendall')
-        self.assertFalse(string_tag.get_children.exists())
+        tag = ElementData('Kendall')
+        self.assertFalse(tag.get_children().exists())
     
     
 if __name__ == '__main__':
