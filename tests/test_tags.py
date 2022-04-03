@@ -1,7 +1,7 @@
 import unittest
 from typing import Generator
 
-from krysalid.html_tags import BaseTag, ElementData, NewLine, Tag
+from krysalid.html_tags import BaseTag, ElementData, NewLine, Tag, Comment
 from krysalid.parsers import HTMLPageParser
 from krysalid.queryset import QuerySet
 from krysalid.tests.items import SIMPLE_HTML
@@ -101,6 +101,22 @@ class TestBaseTag(unittest.TestCase):
         tag._internal_data = [ElementData('something'), NewLine()]
         self.assertEqual(tag.string, 'something')
         
+    def test_subscriptability(self):
+        # TODO: Maybe make all tags subscriptable
+        # and if the attempt to return a key from
+        # the tag does not exist, just return None
+        tag = Tag('a')
+        comment = Comment('This is a simple comment to be used by me')
+        newline = NewLine()
+        element_data = ElementData('Something')
+        
+        tags = [tag, comment, newline, element_data]
+        
+        for tag in tags:
+            with self.subTest(tag=tag):
+                result = tag['name']
+                self.assertEqual(result, None)             
+    
     
 class TestQueryFunctions(unittest.TestCase):
     """Test core functionnalities of query
