@@ -260,7 +260,7 @@ class Tag(BaseTag):
         return name in self.attrs.keys()
 
     def get_attr(self, name: str):
-        return self.attrs[name]
+        return self.attrs.get(name, None)
 
     def find(self, name: str, attrs: dict = {}):
         """Find a tag within the children of the tag"""
@@ -329,5 +329,5 @@ class ElementData(StringMixin, BaseTag):
 # tag['class'] = 'Kendall'
 # print(newline.is_empty_element)
 
-tag = ElementData('Something')
-print(tag.attrs_list)
+# tag = ElementData('Something')
+# print(tag.attrs_list)
