@@ -1,27 +1,34 @@
 # from bs4 import BeautifulSoup
 # from importlib_metadata import re
-from krysalid.parsers import HTMLPageParser
 # from bs4 import BeautifulSoup
+from krysalid.parsers import HTMLPageParser
+from krysalid.functions import Q
+
+from krysalid.html_tags import Tag
+
+tags = [Tag('a'), Tag('a', attrs=[('id', 'name')]), Tag('a', attrs=[('id', 'a')])]
+
+
 
 
 f = open('html/test4.html', encoding='utf-8')
 soup = HTMLPageParser(f)
 body = soup.manager.find_all('div', attrs={'id': '3'})
 print(body.explain())
-# with open('tests/html_parser/test1.html', encoding='utf-8') as f:
-#     soup = HTMLPageParser(f)
-#     body = soup.manager.find('body')
-#     # print(soup.manager.regex(re.compile(r'^img')))
+with open('tests/html_parser/test1.html', encoding='utf-8') as f:
+    soup = HTMLPageParser(f)
+    body = soup.manager.find('body')
+    # print(soup.manager.regex(re.compile(r'^img')))
 
-#     # b = BeautifulSoup(f, 'html.parser')
-#     # body = b.find('body')
-#     # body.find_all('img')
+    # b = BeautifulSoup(f, 'html.parser')
+    # body = b.find('body')
+    # body.find_all('img')
 f.close()
 # e = time.time() - s
 
 
 
-from krysalid.parsers import HTMLPageParser, Algorithm
+# from krysalid.parsers import HTMLPageParser, Algorithm
 
 # with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
 #     s = time.time()
