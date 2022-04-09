@@ -1,5 +1,5 @@
 from collections import OrderedDict, deque
-from functools import cached_property
+from functools import cached_property, total_ordering
 from typing import Callable, List, Tuple, Union
 
 from krysalid.queryset import QuerySet
@@ -121,7 +121,8 @@ class QueryMixin:
     # def insert_after(self, *tags):
     #     pass
     
-
+    
+@total_ordering
 class StringMixin:
     def __repr__(self):
         return self.data
@@ -143,6 +144,9 @@ class StringMixin:
         
     def __eq__(self, value):
         return self.data == value
+    
+    def __gt__(self, value):
+        return len(self.data) > len(value)
    
     def __ne__(self, value):
         return self.data != value

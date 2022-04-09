@@ -10,5 +10,5 @@ with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
     # v = q.values('id')
     # print(v.as_tags())
     s = HTMLPageParser(f)
-    result = s.objects.find_all('p') 
-    print(result.first)
+    result = s.objects.find_all('p')
+    
