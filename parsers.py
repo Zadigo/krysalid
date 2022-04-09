@@ -317,7 +317,7 @@ class HTMLPageParserDescriptor:
         self.result = None
         
     def __get__(self, instance, cls=None):
-        extractor = Extractor()
+        extractor = Extractor(skip_newlines=instance.skip_newlines)
         
         data = self.__dict__
         previous_extraction = data.get('extractor', None)
