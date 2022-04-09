@@ -400,15 +400,15 @@ class HTMLPageParserDescriptor:
         self.result = None
         
     def __get__(self, instance, cls=None):
-        extractor = Extractor(skip_newlines=instance.skip_newlines)
+        extractor = Extractor()
         
         data = self.__dict__
         previous_extraction = data.get('extractor', None)
         if previous_extraction is None:
-            thread = threading.Thread(target=extractor.resolve, kwargs={'html': instance._original_page})
-            # extractor.resolve(instance._original_page)
-            thread.start()
-            thread.join()
+            extractor.resolve(instance._original_page)
+            # thread = threading.Thread(target=extractor.resolve, kwargs={'html': instance._original_page})
+            # thread.start()
+            # thread.join()
             data['extractor'] = extractor
         manager = Manager(extractor)
         return manager
