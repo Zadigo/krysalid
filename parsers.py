@@ -1,3 +1,4 @@
+import threading
 import itertools
 from collections import Counter, deque
 from encodings import utf_8
@@ -394,16 +395,37 @@ class Extractor:
     #         self._add_coordinates(klass, kwargs)
 
 
-class HTMLPageParser(Extractor):
+class HTMLPageParserDescriptor:
+    def __init__(self):
+        self.result = None
+        
+    def __get__(self, instance, cls=None):
+        extractor = Extractor(skip_newlines=instance.skip_newlines)
+        
+        data = self.__dict__
+        previous_extraction = data.get('extractor', None)
+        if previous_extraction is None:
+            thread = threading.Thread(target=extractor.resolve, kwargs={'html': instance._original_page})
+            # extractor.resolve(instance._original_page)
+            thread.start()
+            thread.join()
+            data['extractor'] = extractor
+        manager = Manager(extractor)
+        return manager
+        
+        
+class HTMLPageParser:
     """The main class used to process the html page.
     It implements the default manager for querying
     the different items"""
     
+    objects = HTMLPageParserDescriptor()
+    
     def __init__(self, html: Union[str, bytes, TextIOWrapper, StringIO],
                  defer_resolution: bool=False, skip_newlines: bool=False,
                  track_line_numbers: bool=False):
-        self.manager = Manager(self)
-        super().__init__(skip_newlines=skip_newlines, track_line_numbers=track_line_numbers)
+        # self.manager = Manager(self)
+        # super().__init__(skip_newlines=skip_newlines, track_line_numbers=track_line_numbers)
 
         string = None
         if isinstance(html, TextIOWrapper):
@@ -421,8 +443,8 @@ class HTMLPageParser(Extractor):
             
         self._original_page = string
         
-        if not defer_resolution:
-            self.resolve(self._original_page)
+        # if not defer_resolution:
+        #     self.resolve(self._original_page)
         
     @property
     def page_has_content(self):

@@ -1,18 +1,16 @@
+import itertools
 from typing import Generator, Iterator, List, Tuple, Union
 
 from krysalid.utils.iteration import (drop_while, filter_by_name,
-                                      filter_by_name_or_attrs, map_function)
+                                      filter_by_name_or_attrs)
 
 
-class QuerySet:
-    """Represents the aggregation of multiple
-    tags from the html page"""
-    
+class BaseQueryset:
     def __init__(self):
         self._data = []
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self._data})"
+        return f"<Queryset[{self._data}]>"
 
     def __iter__(self):
         return iter(self._data)
@@ -35,6 +33,14 @@ class QuerySet:
         querysets.extend(obj._data)
         return self.copy(querysets)
     
+    @property
+    def last(self):
+        return self._data[-1]
+
+    @property
+    def count(self):
+        return len(self._data)
+
     @classmethod
     def copy(cls, data: Union[Generator, Iterator]):
         instance = cls()
@@ -45,18 +51,66 @@ class QuerySet:
         # this technique is.
         instance._data = list(data)
         return instance
+    
+    @classmethod
+    def combine(cls, querysets):
+        """Combine a list of querysets to a single
+        queryset instance"""
+        new_queryset = cls()
+        
+        combined_data = []
+        for queryset in querysets:
+            if not isinstance(queryset, cls):
+                raise ValueError('Can only combine a list of quersyets')
+            combined_data.extend(queryset._data)
+        new_queryset._data = combined_data
+        return new_queryset
+
+    
+class ValuesQueryset(BaseQueryset):
+    """Special queryset for lists of attributes
+    like ids, classes etc"""
+    
+    def __init__(self):
+        # Keeps track of the relationship between
+        # the value and the tag from which
+        # said value comes from
+        self._relationships = []
+        super().__init__()
+            
+    def find_all(self, value: str):
+        """Returns all items from the queryset that matches
+        the given value"""
+        def results():
+            for item in self._data:
+                if value in item:
+                    yield item
+        return self.copy(results())
+    
+    def flatten(self):
+        """A multiple dimension list is flattened
+        to a 1D list"""
+        return self.copy(itertools.chain(*self._data))
+    
+    def distinct(self):
+        """Keep only unique value"""
+        return self.copy(set(self._data))
+    
+    # def as_tags(self):
+    #     """Returns the corresponding tags based on
+    #     # TODO: To go from tags to result we have
+          # to work directly with the relationships
+    #     the result of the previous query"""
+    #     return QuerySet.copy((item[0] for item in self._relationships))
+
+
+class QuerySet(BaseQueryset):
+    """Represents the aggregation of multiple
+    tags from the html page"""
 
     @property
     def first(self):
         return self._data[0]
-
-    @property
-    def last(self):
-        return self._data[-1]
-
-    @property
-    def count(self):
-        return len(self._data)
     
     # def save(self, filename: str):
     #     pass
@@ -88,6 +142,9 @@ class QuerySet:
         attribute is provided, the string is returned
         by default"""
         contents = []
+        relationships = []
+        
+        attrs = list(attrs)
         
         attrs = list(attrs)
         
@@ -102,11 +159,14 @@ class QuerySet:
                 else:
                     values.append(item[attr])
             contents.append(values)
+            relationships.append((item, values))
             
         if include_fields:
             contents.insert(0, list(attrs))
         
-        return contents
+        queryset = ValuesQueryset.copy(contents)
+        queryset._relationships = relationships
+        return queryset
     
     # def values_list(self, *attrs):
     #     """Returns a list of tuples using the provided 

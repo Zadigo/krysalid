@@ -1,7 +1,8 @@
-from collections import deque
 import secrets
+from collections import deque
 from functools import cached_property
 from typing import Pattern, Union
+
 from krysalid.exceptions import TagExistsError
 from krysalid.html_tags import BaseTag, Tag
 from krysalid.queryset import QuerySet
@@ -26,8 +27,8 @@ class Manager:
         # self._internal_values = TagsIterable(extractor)
 
     def __repr__(self):
-        name = f"{self._extractor_instance.__class__.__name__}{self.__class__.__name__}"
-        return f"{name}(tags={len(self._extractor_instance)})"
+        name = self._extractor_instance.__class__.__name__
+        return f"<{self.__class__.__name__} for {name}>"
 
     @cached_property
     def get_title(self) -> Union[str, None]:
@@ -66,6 +67,9 @@ class Manager:
         """Filter tags by name or by attributes"""
         result = filter_by_name_or_attrs(self._extractor_instance, name, attrs)
         return QuerySet.copy(result)
+    
+    def expressions(self, *args):
+        pass
     
     def regex(self, name: Pattern):
         """Filter tags by using a regex pattern"""
