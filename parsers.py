@@ -1,3 +1,4 @@
+import threading
 import itertools
 from collections import Counter, deque
 from encodings import utf_8
@@ -321,7 +322,10 @@ class HTMLPageParserDescriptor:
         data = self.__dict__
         previous_extraction = data.get('extractor', None)
         if previous_extraction is None:
-            extractor.resolve(instance._original_page)
+            thread = threading.Thread(target=extractor.resolve, kwargs={'html': instance._original_page})
+            # extractor.resolve(instance._original_page)
+            thread.start()
+            thread.join()
             data['extractor'] = extractor
         manager = Manager(extractor)
         return manager
