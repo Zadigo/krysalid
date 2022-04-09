@@ -51,6 +51,20 @@ class BaseQueryset:
         # this technique is.
         instance._data = list(data)
         return instance
+    
+    @classmethod
+    def combine(cls, querysets):
+        """Combine a list of querysets to a single
+        queryset instance"""
+        new_queryset = cls()
+        
+        combined_data = []
+        for queryset in querysets:
+            if not isinstance(queryset, cls):
+                raise ValueError('Can only combine a list of quersyets')
+            combined_data.extend(queryset._data)
+        new_queryset._data = combined_data
+        return new_queryset
 
     
 class ValuesQueryset(BaseQueryset):

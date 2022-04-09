@@ -178,6 +178,9 @@ class TagMixin:
         
     @staticmethod
     def _build_attrs(attrs):
+        if not isinstance(attrs, list):
+            raise ValueError('Attributes should be a list of tuples e.g. [("id", "value")]')
+        
         attrs_dict = OrderedDict()
         for key, value in attrs:
             attrs_dict.setdefault(key, value)
