@@ -2,10 +2,11 @@ from krysalid.queryset import QuerySet
 
 
 class Function:
-    OPERATORS = {'eq': '=', 'in': '=', 'lt': '<', 'gt': '>', 'contains': '=', 
+    OPERATORS = {'eq': '=', 'in': '=', 'lt': '<', 'gt': '>', 'contains': '=', 'icontains': '=', 
                  'lte': '<=', 'gte': '>=', 'ne': '!=', 'none': 'None'}
     query_attributes = {'eq', 'in', 'lt', 'gt', 
-                        'contains', 'lte', 'gte', 'ne', 'none'}
+                        'contains', 'icontains', 'lte', 
+                        'gte', 'ne', 'none'}
     attributes = {'class', 'id', 'src', 'href'}
     
     def __init__(self, **expressions):
@@ -19,7 +20,7 @@ class Function:
         expressions = []
         for lhs, value_to_compare in self._expressions:
             tag, attr, operator = lhs
-            expression = f"<{tag}{self.OPERATORS.get(operator)}{value_to_compare}>"
+            expression = f"<tag={tag}, {attr}{self.OPERATORS.get(operator)}{value_to_compare}>"
             expressions.append(expression)
         return f"{self.__class__.__name__}([{', '.join(expressions)}])"
         
@@ -54,6 +55,9 @@ class Function:
         
         if comparator == 'contains' or comparator == 'in':
             return b in a
+        
+        if comparator == 'icontains':
+            return b in a or b in a.title()
         
         if comparator == 'none':
             return b is None
@@ -108,9 +112,15 @@ class Combination:
         self._querysets = []
         
     def __repr__(self):
-        reprs = [f"<{repr(self.initial_func)}>"]
-        reprs.append(f"<{repr(self.func_to_combine)}>")
-        return f"{self.__class__.__name__}({' '.join(reprs)})"
+        # reprs = [f"<{repr(self.initial_func)}>"]
+        # reprs.append(f"<{repr(self.func_to_combine)}>")
+        # return f"{self.__class__.__name__}({' '.join(reprs)})"
+        return ' '.join(map(lambda func: repr(func), self._functions))
+    
+    def __and__(self, obj):
+        if not isinstance(obj, Q):
+            raise ValueError('Object should be an instance of Q')
+        self._functions.append(obj)
     
     def set_functions(self):
         # Make each sub function know about
@@ -122,9 +132,18 @@ class Combination:
             self._querysets.append(func.resolve_query())
 
     def resolve_query(self):
-        pass
-
-
+        # We have to resolve each internal
+        # query of the functions and then
+        # compbine the final result into
+        # a single queryset
+        querysets = []
+        for function in self._functions:
+            function._extractor_instance = self._extractor_instance
+            queryset = function.resolve_query()
+            querysets.append(queryset)
+        return QuerySet.combine(querysets)
+    
+    
 class Q(Function):
     """A helper function used to run more
     complex queries on the html page"""
@@ -153,18 +172,34 @@ class Q(Function):
 
 # from krysalid.html_tags import Tag
 
-# tags = [Tag('a'), Tag('a', attrs=[('id', 'name')]), Tag('a', attrs=[('id', 'a')])]
+# from krysalid.html_tags import Tag
 
-# q = Q(a__id='a')
-# q._extractor_instance = tags
-# q.resolve_query()
-
-# q1 = Q(a__class__eq='Kendall')
-# q2 = Q(a__id='name')
-# q3 = Q(a__id='names', a__id__ne='star')
-# c = q1 | q2
-# c._extractor_instance = tags
-# c.set_functions()
-# print(c._functions)
+# tags = [Tag('a'), Tag('div', attrs=[('class', 'google')]), Tag('a', attrs=[('id', 'name')]), Tag('a', attrs=[('id', 'test')])]
 
 
+# # q = Q(a__id='test')
+# # q2 = Q(a__id__icontains='name')
+# # q2._extractor_instance = tags
+# # result = q2.resolve_query()
+# # print(result)
+
+# q1 = Q(a__id__ne='test')
+# # q2 = Q(a__id='name')
+# q3 = Q(div__class__ne='google')
+# expression = q1 & q3
+# expression._extractor_instance = tags
+# result = expression.resolve_query()
+# print(result)
+
+
+# # q = Q(a__id='a')
+# # q._extractor_instance = tags
+# # q.resolve_query()
+
+# # q1 = Q(a__class__eq='Kendall')
+# # q2 = Q(a__id='name')
+# # q3 = Q(a__id='names', a__id__ne='star')
+# # c = q1 | q2
+# # c._extractor_instance = tags
+# # c.set_functions()
+# # print(c._functions)

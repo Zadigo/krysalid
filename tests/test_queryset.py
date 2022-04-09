@@ -2,6 +2,7 @@ import unittest
 
 from krysalid.html_tags import ElementData, Tag
 from krysalid.queryset import QuerySet
+from queryset import BaseQueryset, ValuesQueryset
 
 
 class TestQueryset(unittest.TestCase):
@@ -49,8 +50,13 @@ class TestQueryset(unittest.TestCase):
         pass
     
     def test_values(self):
-        pass
+        result = self.queryset.values('string')
+        self.assertListEqual(list(result), [[None], [None], ['Something'], ['Something']])
     
+        # When a field does not exist on the instance
+        result = self.queryset.values('name')
+        print(result)
+
     def test_dates(self):
         pass
     
