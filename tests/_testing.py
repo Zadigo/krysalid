@@ -1,9 +1,9 @@
 from krysalid.parsers import HTMLPageParser
 import time
 
-
-# # with open('tests/html/test4.html', mode='r', encoding='utf-8') as f:
-with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
+# ['html', ['head', ['meta', 'meta', 'meta', 'title']], ['body', ['main', ['div', ['div', ['span'], ['span']], ['div', ['span'], ['span']]]]]]
+with open('tests/html/test4.html', mode='r', encoding='utf-8') as f:
+# with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
     # s = HTMLPageParser(f)
     # q = s.manager.expressions(Q(a__id__eq='test'), Q(a__id__contains='teest2'))
     # q = s.manager.expressions(Q(a__id='test') & Q(a__id__ne='test2'))
@@ -11,7 +11,13 @@ with open('tests/html/test1.html', mode='r', encoding='utf-8') as f:
     # v = q.values('id')
     # print(v.as_tags())
     s = HTMLPageParser(f)
-    result = s.objects.find_all('p')
+    print(s.objects._extractor.html)
+    # result = s.objects.find_all('p')
+    # print(result)
+
+
+
+
 
 # from functools import lru_cache
 # from krysalid.html_tags import Tag, ElementData, NewLine, Comment

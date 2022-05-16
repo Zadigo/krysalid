@@ -17,7 +17,7 @@ class Manager:
         from krysalid.parsers import Extractor
         if not isinstance(extractor, Extractor):
             raise TypeError('Extractor should be an instance of Extractor')
-        self._extractor_instance = extractor
+        self._extractor = extractor
         
         # TODO: Test doing all iterations by chunks as
         # opposed to doing one by one values in order
@@ -27,12 +27,12 @@ class Manager:
         # self._internal_values = TagsIterable(extractor)
 
     def __repr__(self):
-        name = self._extractor_instance.__class__.__name__
+        name = self._extractor.__class__.__name__
         return f"<{self.__class__.__name__} for {name}>"
 
     @cached_property
     def get_title(self) -> Union[str, None]:
-        items = filter_by_name(self._extractor_instance, 'title')
+        items = filter_by_name(self._extractor, 'title')
         try:
             return list(items)[0]
         except:
@@ -40,7 +40,7 @@ class Manager:
         
     @cached_property
     def count(self):
-        return len(self._extractor_instance)
+        return len(self._extractor)
 
     # @cached_property
     # def links(self):
@@ -57,7 +57,7 @@ class Manager:
     def find(self, name: str, attrs: dict = {}) -> Tag:
         """Get a tag by name or attribute. If there are multiple
         tags, the first item of the list is returned"""
-        result = filter_by_name_or_attrs(self._extractor_instance, name, attrs)
+        result = filter_by_name_or_attrs(self._extractor, name, attrs)
         try:
             return list(result)[0]
         except IndexError:
@@ -65,7 +65,7 @@ class Manager:
 
     def find_all(self, name: Union[str, list], attrs: dict = None):
         """Filter tags by name or by attributes"""
-        result = filter_by_name_or_attrs(self._extractor_instance, name, attrs)
+        result = filter_by_name_or_attrs(self._extractor, name, attrs)
         return QuerySet.copy(result)
     
     def expressions(self, *args):
@@ -131,7 +131,7 @@ class Manager:
     #     if not isinstance(tag, BaseTag):
     #         raise TypeError('Tag should be an instance of BaseTag')
 
-    #     self._extractor_instance.container.insert(position, tag)
+    #     self._extractor.container.insert(position, tag)
         
     # def to_representation(self):
     #     html_tree = []
@@ -157,7 +157,7 @@ class Manager:
     #     """Show the actual representation of
     #     the Python collection of tags"""
     #     html_tree = []
-    #     with self._extractor_instance as tags:
+    #     with self._extractor as tags:
     #         for tag in tags:
     #             if tag.name == 'newline':
     #                 yield '\n'
