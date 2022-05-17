@@ -2,6 +2,7 @@ from encodings import utf_8
 from functools import cached_property
 from html.parser import HTMLParser
 from io import StringIO, TextIOWrapper
+import pathlib
 from krysalid.managers import Manager
 from krysalid.compiler import Compiler
 
@@ -57,12 +58,11 @@ class HTMLPageParser:
     compiler_class = Compiler
     objects = Manager()
     
-    def __init__(self, html, encoding='utf-8', **kwargs):
-        self.algorithm = self.algorithm_class(**kwargs)
-        self.compiler = self.compiler_class(self)
+    def __init__(self, html=None, encoding='utf-8', **kwargs):
         self.cached_page = ''
         
         if isinstance(html, TextIOWrapper):
+            html.encoding = 'utf-8'
             # FIXME: Cannot read file if we don't
             # pass utf-8 in open()
             self.cached_page = html.read()
@@ -72,6 +72,10 @@ class HTMLPageParser:
             self.cached_page, size = utf_8.decode(html, errors='strict')
         elif isinstance(html, str):
             self.cached_page = html
+            
+        self.algorithm = self.algorithm_class(**kwargs)
+        self.compiler = self.compiler_class(self)
+        self.encoding = encoding
             
     def __repr__(self):
         return f"<{self.__class__.__name__}[]>"
@@ -88,7 +92,24 @@ class HTMLPageParser:
         self.parse_page()
         return self.algorithm.container
     
+    @classmethod
+    def from_file(cls, path, encoding='utf-8'):
+        path = pathlib.Path(path)
+        
+        if not path.exists():
+            raise ValueError('Path does not exist')
+        
+        if not path.is_file():
+            raise ValueError('Is not a file')
+
+        with open(path, mode='r', encoding=encoding) as f:
+            content = f.read()
+            instance = cls(html=content)
+            return instance
+    
     def parse_page(self):
+        """Get the list of tags as list of
+        tuples to be used by the compiler"""
         # Before reading the page, ensure that
         # the page is correctly formatted
         self.compiler.pre_compile_setup(self.cached_page)

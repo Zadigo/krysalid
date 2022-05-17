@@ -27,14 +27,16 @@ class Manager:
     def filter(self, *args, **kwargs):
         pass
     
-    def find(self, tag, attrs=None):
+    def find(self, name, attrs=None):
         if attrs is None:
             # NOTE: Return the first occurance of
             # a tag if the user does not provide
             # any other defining attributes
-            queryset = QuerySet.clone(self.compiler, partial=True)
-            queryset.query = {'tag': tag, 'attrs': attrs}
-            return queryset
+            return self.compiler.get_tag(name)
+        else:
+            return None
     
-    def find_all(self, tag, attrs=None):
-        pass
+    def find_all(self, name, attrs=None):
+        queryset = QuerySet.clone(self.compiler, partial=True)
+        queryset.query = {'tag': name, 'attrs': attrs}
+        return queryset

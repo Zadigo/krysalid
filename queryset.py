@@ -1,3 +1,4 @@
+import inspect
 
 
 class ItemsIterable:
@@ -56,6 +57,18 @@ class QuerySet:
         self.fetch_all()
         return iter(self.result_cache)
     
+    def __getitem__(self):
+        pass
+    
+    def __eq__(self, obj):
+        pass
+    
+    def __and__(self, obj):
+        pass
+    
+    def __bool__(self):
+        pass
+    
     @classmethod
     def clone(cls, compiler, partial=False):
         instance = cls()
@@ -63,7 +76,55 @@ class QuerySet:
         instance.partial = partial
         return instance
     
+    # ######################################
+    # Queryset methods are run on the tag  #
+    # instances directly and not on the    #
+    # raw values                           #
+    # #################################### #
+        
+    @property
+    def first(self):
+        pass
+    
+    @property
+    def last(self):
+        pass
+
     def fetch_all(self):
+        """Load the result cache with the
+        raw parsed data"""
         if self.result_cache is None:
             self.result_cache = self.iterable_class(self)
+            
+    def count(self):
+        pass
+            
+    def filter(self, *args, **kwargs):
+        pass
+    
+    def find(self, name, attrs={}):
+        pass
         
+    def find_all(self, name, attrs={}):
+        pass
+    
+    def distinct(self):
+        pass
+    
+    def exclude(self, tag, attrs={}):
+        pass
+
+    def union(self, *querysets):
+        pass
+    
+    def exists(self):
+        pass
+    
+    def contains(self):
+        pass
+    
+    def explain(self):
+        pass
+    
+    def update_attribute(self, name, attr, value):
+        pass

@@ -1,5 +1,5 @@
 {
-    "[python]": {
-        "editor.wordBasedSuggestionsMode": "allDocuments"
-    }
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/krysalid/"
+    ]
 }
