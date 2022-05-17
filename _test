@@ -1,0 +1,122 @@
+
+
+with open(pathlib.Path('.').joinpath('tests/html/test4.html'), encoding='utf-8') as f:
+    a = Algorithm()
+    a.feed(f.read())
+    
+    PARENT_EXCEPTIONS = {'html', 'head', 'body'}
+    
+    def get_index(name, tags, substract=None, add=None):
+        for tag in tags:
+            if name in tag:
+                break
+        return tags.index(tag)
+    
+    def html(tags):
+        top_index = get_index('html', tags) - 1
+        for i in range(len(tags)):
+            tag = tags[i]
+            if 'et' in tag and 'html' in tag:
+                yield tag
+                break
+            if i > top_index:
+                yield tag
+                
+    def body(tags):
+        top_index = get_index('body', tags) - 1
+        for i in range(len(tags)):
+            tag = tags[i]
+            if 'et' in tag and 'body' in tag:
+                yield tag
+                break
+            if i > top_index:
+                yield tag
+                
+    def head(tags):
+        top_index = get_index('head', tags) - 1
+        for i in range(len(tags)):
+            tag = tags[i]
+            if 'et' in tag and 'head' in tag:
+                yield tag
+                break
+            if i > top_index:
+                yield tag
+
+    def get_top_and_lower_indexes(name, tags):
+        for tag in tags:
+            if name in tag:
+                break
+        top_index = tags.index(tag)
+        for tag in tags:
+            if name in tag and 'et' in tag:
+                break
+        bottom_index = tags.index(tag) + 1
+        return top_index, bottom_index
+    
+    def get_parent_from_index(top, tags):
+        parent_index = top - 1
+        parent = tags[parent_index]
+        parent_name = parent[1]
+        for tag in tags:
+            if parent_name in tag and 'et' in tag:
+                break
+        bottom_index = tags.index(tag) + 1
+        return parent_index, bottom_index
+        
+    def get_tag(name, tags):
+        top_index, bottom_index = get_top_and_lower_indexes(name, tags)
+        print(top_index, bottom_index)
+        return tags[top_index:bottom_index]
+    
+    def get_parent(initial_index, tags):
+        # NOTE: Best to work on all tags
+        top_index, bottom_index = get_parent_from_index(initial_index, tags)
+        return tags[top_index:bottom_index]
+    
+    def get_siblings(initial_index, tags):
+        parent = get_parent(initial_index, tags)
+        return parent[1:-1]
+    
+    def next_sibling(tag, tags):
+        tag_name = None
+        top_index = 0
+        lower_index = 0
+        for i, item in enumerate(tags):
+            if tag == item:
+                top_index = i
+                tag_name = tag[1]
+                
+            if tag_name in item and 'et' in item:
+                lower_index = i
+                break
+            
+        result = []
+        for i in range(lower_index + 1, len(tags)):
+            item = tags[i]
+            if 'd' in item:
+                result.append(item)
+                break
+            elif 'et' not in item:
+                result.append(item)
+            else:
+                break
+        return result
+            
+
+    # print(get_tag('span', a.container))
+    # print(get_parent(25, a.container))
+    # print(get_siblings(25, a.container))
+    
+    # print(next_sibling(('t', 'span', [], (13, 20)), get_siblings(25, a.container)))
+    # print(list(html(a.container)))
+    # print(list(body(a.container)))
+    # print(list(head(a.container)))
+    
+
+
+# from bs4 import BeautifulSoup
+
+# with open(pathlib.Path('.').joinpath('tests/html/test4.html'), encoding='utf-8') as f:
+#     s = BeautifulSoup(f, 'html.parser')
+#     r = s.find('head').next_siblings
+#     print(list(r))
