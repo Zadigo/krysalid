@@ -1,4 +1,5 @@
 from collections import Counter, OrderedDict
+from html_tags import NewLine
 from krysalid.html_tags import Tag, ElementData
 
 class BaseCompiler:
@@ -54,6 +55,8 @@ class BaseCompiler:
             return Tag
         if category == 'DA':
             return ElementData
+        if category == 'NL':
+            return NewLine
         return Tag
 
     def format_page(self, page):

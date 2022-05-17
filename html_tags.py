@@ -31,17 +31,25 @@ class BaseTag:
         return hash((self.name, self.index, self.coordinates, self._attrs))
     
     def __eq__(self, value):
-        if not isinstance(value, str):
-            return self.name == value.name and self.attrs == value.attrs
-        truth_array = map(lambda x: value == x, self.attrs.values())
-        return self.name == value and all(truth_array)
+        if self._attrs:
+            if not isinstance(value, str):
+                return self.name == value.name and self.attrs == value.attrs
+            
+            truth_array = map(lambda x: value == x, self.attrs.values())
+            return self.name == value and all(truth_array)
+        else:
+            return self.name == value
     
     def __contains__(self, value):
-        if not isinstance(value, str):
-            return self.name in value.name
-        truth_array = map(lambda x: value in x, self.attrs.values())
-        return self.name in value and all(truth_array)
-    
+        if self._attrs:
+            if not isinstance(value, str):
+                return self.name in value.name
+            
+            truth_array = map(lambda x: value in x, self.attrs.values())
+            return self.name in value and all(truth_array)
+        else:
+            return self.name == value
+        
     def __getitem__(self, name):
         return self.attrs.get(name, None)
     
@@ -86,6 +94,9 @@ class StringMixin:
     def __eq__(self, value):
         return value == self.data
     
+    def __contains__(self, value):
+        return value in self.data
+    
     def __gt__(self, value):
         return len(value) > len(self)
     
@@ -110,6 +121,9 @@ class NewLine(StringMixin, BaseTag):
     def __init__(self, data='\n'):
         super().__init__('newline', {}, [])
         self.data = data
+        
+    def __eq__(self, value):
+        return value == '\n'
         
 
 class ElementData(StringMixin, BaseTag):
