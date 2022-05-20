@@ -2,7 +2,53 @@ from functools import total_ordering
 from typing import OrderedDict
 
 
-class BaseTag:
+class NavigationMixin:
+    def find_all_next(self, name=None, attrs={}):
+        """Finds all the next matching elements
+        after the current tag. If name and/or attrs
+        return those that match"""
+
+    def find_all_previous(self, name=None):
+        """Finds all the previous matching elements
+        after the current tag. If name and/or attrs
+        return those that match"""
+    
+    def find_next(self, name=None, attrs={}):
+        """Finds the next matching element
+        matching the given name"""
+    
+    def find_previous(self, name=None, attrs={}):
+        """Finds the previous matching element
+        matching the given name"""
+
+    def find_next_sibling(self, name=None, attrs={}):
+        """Finds the next matching sibling"""
+
+    def find_previous_sibling(self, name=None, attrs={}):
+        """Finds the previous matching sibling"""
+
+    def find_next_siblings(self, name=None, attrs={}):
+        """Finds the next matching siblings"""
+
+    def find_previous_siblings(self, name=None, attrs={}):
+        """Finds the previous matching siblings"""
+    
+    def find_parent(self, name=None, attrs={}):
+        """Finds the element's parent"""
+
+    def find_parents(self, name=None, attrs={}):
+        """Finds all the parents of the
+        current element"""
+        
+    def get_attribute_list(self, key, default=[]):
+        """Returns the attributes as a list"""
+
+    def get_text(self, seperator=None, clean=True):
+        """Returns all the text within the
+        current element"""
+
+
+class BaseTag(NavigationMixin):
     is_string = False
     
     TAG_ATTRS_TEMPLATE = "<{name} {attrs}>{content}</{name}>"
@@ -17,12 +63,7 @@ class BaseTag:
         self.compiler = None
         self._attrs = attrs
         self.closing_tag = False
-        # self.closed = False
-        # self._previous_sibling = None
-        # self._next_sibling = None
-        # self._parents = deque()
-        # self._children = deque()
-        # self._internal_data = deque()
+        self.limits = []
         
     def __repr__(self):
         if self.closing_tag:

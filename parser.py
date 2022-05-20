@@ -1,21 +1,19 @@
+import pathlib
 from encodings import utf_8
 from functools import cached_property
 from html.parser import HTMLParser
 from io import StringIO, TextIOWrapper
-import pathlib
-from krysalid.managers import Manager
-from krysalid.compiler import Compiler
 
- 
+from pydantic import PathNotExistsError
+
+from krysalid.compiler import Compiler
+from krysalid.managers import Manager
+
+
 class Algorithm(HTMLParser):    
     def __init__(self, **kwargs):
         self.container = []
         super().__init__(**kwargs)
-    
-    @property
-    def _increase_index(self):
-        self.index = self.index + 1
-        return self.index
 
     def handle_startendtag(self, tag, attrs):
         """Handles tags such as <img /> or <img>"""
@@ -30,11 +28,16 @@ class Algorithm(HTMLParser):
         self.container.append(('ET', tag, [], self.getpos()))
 
     def handle_data(self, data):
-        """Handles data within tags 'Kendall' in <span>Kendall</span>"""
+        """Handles data e.g. 'Kendall' in <span>Kendall</span>"""
+        # Special case for newlines where
+        # we return a stripped version
+        if '\n' in data:
+            data = data.strip(' ')
+            if data == '\n':
+                data = '\n'
         self.container.append(('DA', data, [], self.getpos()))
         
     def handle_comment(self, data):
-        """Handles comments"""
         self.container.append(('CO', data, [], self.getpos()))
         
     def handle_charref(self, name):
@@ -59,26 +62,33 @@ class HTMLPageParser:
     objects = Manager()
     
     def __init__(self, html=None, encoding='utf-8', **kwargs):
+        # Optimize page parsing by skipping 
+        # certain CDATA unecessary tags like 
+        # style and script tags
+        # self.optimize = optimize
         self.cached_page = ''
+        self.encoding = encoding
         
-        if isinstance(html, TextIOWrapper):
-            html.encoding = 'utf-8'
-            # FIXME: Cannot read file if we don't
-            # pass utf-8 in open()
-            self.cached_page = html.read()
-        elif isinstance(html, StringIO):
-            self.cached_page = html.read()
-        elif isinstance(html, bytes):
-            self.cached_page, size = utf_8.decode(html, errors='strict')
-        elif isinstance(html, str):
+        if isinstance(html, str):
             self.cached_page = html
+        
+        # if isinstance(html, TextIOWrapper):
+        #     html.encoding = 'utf-8'
+        #     # FIXME: Cannot read file if we don't
+        #     # pass utf-8 in open()
+        #     self.cached_page = html.read()
+        # elif isinstance(html, StringIO):
+        #     self.cached_page = html.read()
+        # elif isinstance(html, bytes):
+        #     self.cached_page, size = utf_8.decode(html, errors='strict')
+        # elif isinstance(html, str):
+        #     self.cached_page = html
             
         self.algorithm = self.algorithm_class(**kwargs)
         self.compiler = self.compiler_class(self)
-        self.encoding = encoding
             
     def __repr__(self):
-        return f"<{self.__class__.__name__}[]>"
+        return f"<{self.__class__.__name__}[{len(self.get_result_cache)}]>"
     
     @property
     def has_content(self):
@@ -94,23 +104,40 @@ class HTMLPageParser:
     
     @classmethod
     def from_file(cls, path, encoding='utf-8'):
-        path = pathlib.Path(path)
-        
-        if not path.exists():
-            raise ValueError('Path does not exist')
-        
-        if not path.is_file():
-            raise ValueError('Is not a file')
+        path = cls.check_path(path)
 
         with open(path, mode='r', encoding=encoding) as f:
             content = f.read()
             instance = cls(html=content)
             return instance
     
+    # @classmethod
+    # def from_directory(cls, path, encoding='utf-8'):
+    #     path = cls.preconfigure_path(path)
+    #     files = path.glob('**/*')
+    #     valid_html_files = (
+    #         item for item in files 
+    #             if item.is_file() and item.suffix == '.html'
+    #     )
+    
+    @staticmethod
+    def check_path(path):
+        path = pathlib.Path(path)
+
+        if not path.exists():
+            raise PathNotExistsError(path=path)
+
+        if not path.is_file():
+            raise ValueError('Path does not seems to point towards a file')
+
+        if not path.suffix == '.html':
+            raise ValueError('File is not an HTML file')
+        
+        return path
+    
     def parse_page(self):
         """Get the list of tags as list of
         tuples to be used by the compiler"""
-        # Before reading the page, ensure that
-        # the page is correctly formatted
         self.compiler.pre_compile_setup(self.cached_page)
         self.algorithm.feed(self.compiler.clean_page)
+        self.algorithm.close()

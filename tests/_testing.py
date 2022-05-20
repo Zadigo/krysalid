@@ -9,20 +9,15 @@ from krysalid.compiler import Compiler
 # print(tag == 'img')
 # print('img' in tag)
 
-# h = HTMLPageParser.from_file('tests/html/test1.html')
+h = HTMLPageParser.from_file('tests/html/test1.html')
 # h = HTMLPageParser.from_file('tests/html/test2.html')
-h = HTMLPageParser.from_file('tests/html/test7.html')
+# h = HTMLPageParser.from_file('tests/html/test7.html')
 # h = HTMLPageParser.from_file('tests/html/tables.html')
 # h = HTMLPageParser.from_file('tests/html/simple.html')
 # o = h.objects.find(attrs={'id': 'extwaiokist'})
-o = h.objects.find(name='div', attrs={'class': 'kendall'})
+# o = h.objects.find(name='div', attrs={'class': 'kendall'})
 # o = h.objects.find('div', attrs={'class': 'top-rankings__title-container'})
-# print(o)
-# h.objects.find('div', {'id': 'celebrity-1'})
-# q = h.objects.find_all('div')
-# h.objects.filter()
-
-# r = h.objects.find_all('a')
+o = h.objects.find_all(name='div').exists()
 
 
 print(o)

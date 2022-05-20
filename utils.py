@@ -14,8 +14,10 @@ def compare_attributes(tag_attrs, attrs):
     
     tag_keys = map(lambda x: x[0], tag_attrs)
     missing_keys = keys - tag_keys
+    
     if missing_keys:
         return False
+    
     truth_array = []
     for key in keys:
         # if key in missing_keys:

@@ -1,5 +1,6 @@
 from collections import Counter, OrderedDict
-from functools import lru_cache
+from functools import cached_property, lru_cache
+from io import StringIO
 
 from krysalid.html_tags import ElementData, NewLine, Tag
 from krysalid.utils import compare_attributes
@@ -26,7 +27,7 @@ class BaseCompiler:
     def __init__(self, page_parser):
         self.clean_page = None
         self.page_parser = page_parser
-
+        
     def clone(self):
         # Create a new individual instance of
         # the compiler e.g. for querysets
@@ -38,7 +39,7 @@ class BaseCompiler:
         return instance
     
     # @lru_cache(maxsize=100)
-    def map_indexes_by_attributes(self, attrs):        
+    def map_indexes_by_attributes(self, attrs):
         top_limits = []
         lower_limits = []
         
@@ -185,7 +186,11 @@ class BaseCompiler:
         return tostring(fromstring(page), encoding='unicode', pretty_print=True)
     
     def pre_compile_setup(self, page):
-        """Format the HTML page and """
+        """Format the HTML page and also determine
+        if we are dealing with a snippet or a
+        full HTML page"""
+        if not '<html>' in page and not '<body>' in page:
+            page = f'<html><body>{page}</body></html>'
         page = self.format_page(page)
         self.clean_page = page
     
@@ -199,6 +204,14 @@ class BaseCompiler:
 class Compiler(BaseCompiler):
     """Transforms the raw parsed elements from the
     the original parser to Python useable objects"""
+    
+    @cached_property
+    def body(self):
+        # Cache the body part of the page
+        # in order to improve performance
+        # when other functions will be
+        # accessing this section
+        return self.get_tag('body')
         
     def compile_query(self, query):
         result = []
@@ -231,9 +244,17 @@ class Compiler(BaseCompiler):
                     yield tag
     
     def get_data(self, newlines=True):
+        """Returns all the data tags"""
         for tag in self.result_iteration():
             if 'DA' in tag:
                 if not newlines:
                     if '\n' in tag[1]:
                         continue
                 yield tag
+
+    def get_all_text(self, newline=True):
+        buffer = StringIO(newline='\n')
+        for item in self.get_data(newlines=newline):
+            buffer.write(item[1])
+        buffer.seek(0)
+        return buffer.read()

@@ -1,4 +1,9 @@
+from regex import D
+
+
 class ItemsIterable:
+    """Container that allows optimized iteration
+    over a queryset"""
     def __init__(self, queryset, raw_data=[]):
         self.queryset = queryset
         self.raw_data = raw_data
@@ -34,7 +39,7 @@ class ItemsIterable:
                 pass
             yield instance
             
-            
+
 class QuerySet:
     iterable_class = ItemsIterable
     
@@ -75,6 +80,12 @@ class QuerySet:
     def clone(cls, compiler):
         return cls(compiler=compiler)
     
+    def fetch_all(self):
+        """Load the result cache with the
+        raw parsed data"""
+        if self.result_cache is None:
+            self.result_cache = self.iterable_class(self)
+    
     # ######################################
     # Queryset methods are run on the tag  #
     # instances directly and not on the    #
@@ -86,12 +97,6 @@ class QuerySet:
     
     def last(self):
         pass
-
-    def fetch_all(self):
-        """Load the result cache with the
-        raw parsed data"""
-        if self.result_cache is None:
-            self.result_cache = self.iterable_class(self)
             
     def count(self):
         pass
@@ -103,6 +108,9 @@ class QuerySet:
         pass
         
     def find_all(self, name, attrs={}):
+        pass
+        
+    def get_text(self, seperator=None, clean=True):
         pass
     
     def distinct(self):
@@ -118,9 +126,11 @@ class QuerySet:
         pass
     
     def exists(self):
-        pass
+        """Determines if thee queryset
+        has elements"""
+        return len(self) > 0
     
-    def contains(self):
+    def contains(self, name):
         pass
     
     def explain(self):
