@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 class Function:
     def as_query(self, compiler):
         pass
@@ -25,6 +28,37 @@ class Q(Function, Combination):
 class When(Function):
     def __init__(self, condition, then=None, **kwargs):
         pass
+    
+    
+# class Expression:
+#     def to_python(self, value):
+#         pass
+
+
+# class Date(Expression):
+#     format = 'date'
+    
+#     def __init__(self, tag, attrs={}):
+#         pass
+    
+#     def to_python(self, value):
+#         result = datetime.strptime('', value)
+#         return result[self.format]
+
+
+# class TruncYear(Date):
+#     format = 'year'
+    
+        
+# class TruncMonth(Date):
+#     format = 'month'
+
+
+# class TruncDay(Date):
+#     format = 'day'
+
+
+# TruncDay()
 
 
 c = Q(div__eq='something')

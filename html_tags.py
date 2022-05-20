@@ -5,6 +5,11 @@ from typing import OrderedDict
 class BaseTag:
     is_string = False
     
+    TAG_ATTRS_TEMPLATE = "<{name} {attrs}>{content}</{name}>"
+    TAG_TEMPLATE = "<{name}>{content}</name>"
+    SELF_CLOSING_TAG_TEMPLATE = "<{name} />"
+    SELF_CLOSING_TAG_ATTRS_TEMPLATE = "<{name} {attrs} />"
+    
     def __init__(self, name, attrs, coordinates):
         self.name = name
         self.index = 0
@@ -71,7 +76,12 @@ class BaseTag:
         return value in self.attrs.keys()
      
     def attrs_as_string(self):
-        for key, value in self.attrs.items():
+        items = list(self.attrs.items())
+        
+        if not items:
+            return None
+        
+        for key, value in items:
             yield f'{key}="{value}"'
             
 
@@ -130,3 +140,49 @@ class ElementData(StringMixin, BaseTag):
     def __init__(self, data):
         super().__init__('data', {}, [])
         self.data = data
+
+
+class HTMLElement(BaseTag):
+    """From a set of raw values, create a
+    python usable object. Useful for methods
+    that need to return one single tag element"""
+    
+    def __init__(self, values):
+        if not isinstance(values, list):
+            raise ValueError()
+                
+        self._values = values
+        cached_values = values.copy()
+        self.top_boundary = cached_values.pop(0)
+        bottom_boundary = cached_values.pop(-1)
+        
+        self._children = cached_values
+        self._content = map(lambda x: 'DA' in x, cached_values)
+        
+        super().__init__(self.top_boundary[1], self.top_boundary[2], self.top_boundary[3])
+
+    @property
+    def is_data(self):
+        return 'DA' in self.top_boundary
+    
+    @property
+    def is_tag(self):
+        return 'ST' in self.top_boundary
+    
+    @property
+    def is_comment(self):
+        return 'CO' in self.top_boundary
+    
+    @property
+    def children(self):
+        from krysalid.queryset import RawQueryset
+        return RawQueryset.clone(self.compiler, data=self._children)
+        
+
+# div = Tag('div', [], (1, 1))
+# div2 = Tag('div', [], (1, 1))
+# div2.closing_tag = True
+# tags = [div, div2]
+# # print(tags)
+# r = ''.join([tag.__repr__() for tag in tags])
+# print(r)

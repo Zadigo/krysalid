@@ -41,8 +41,7 @@ class TextExtractor(BaseExtractor):
                 
             if item.is_string:
                 yield item
-        
-
+                
 
 class TableExtractor(BaseExtractor):
     def get_queryset(self):

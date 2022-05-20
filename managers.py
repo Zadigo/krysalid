@@ -1,4 +1,7 @@
 from krysalid.queryset import QuerySet
+from krysalid.html_tags import HTMLElement
+from krysalid.utils import compare_attributes
+import itertools
 
 class Manager:
     def __init__(self):
@@ -27,16 +30,61 @@ class Manager:
     def filter(self, *args, **kwargs):
         pass
     
-    def find(self, name, attrs=None):
-        if attrs is None:
-            # NOTE: Return the first occurance of
-            # a tag if the user does not provide
-            # any other defining attributes
-            return self.compiler.get_tag(name)
-        else:
-            return None
+    def find(self, name=None, attrs={}):
+        """Finds the first matching element on
+        the page"""
+        data = []
+        
+        # 1. When there is only the name,
+        # return the first matching tag
+        # 2. When both name and attrs, get
+        # all matching elements with attrs
+        # then get the first matching item
+        # with the name
+        # 3. When only attrs, collect all
+        # items and return just the first
+        # matching element
+        
+        if name is not None and not attrs:
+            data = self.compiler.get_tag(name)
+            return data
+        
+        has_matched = False
+        if name is not None and attrs:
+            limits = self.compiler.map_indexes_by_attributes(attrs)
+            
+            for limit in limits:
+                lh, rh = limit
+                tag = self.compiler.result_iteration()[lh:rh]
+                
+                opening_element = tag[0]
+                if name in tag[0] and 'ST' in tag[0]:
+                    has_matched = True
+                    break
+            data = tag if has_matched else []
+                
+        if name is None and attrs:
+            limits = self.compiler.map_indexes_by_attributes(attrs)
+            
+            for limit in limits:
+                lh, rh = limit
+                tag = self.compiler.result_iteration()[lh:rh]
+
+                opening_element = tag[0]
+                result = compare_attributes(opening_element[2], attrs)
+
+                if result:
+                    has_matched = True
+                    break
+                
+            data = tag if has_matched else []
+        return data
+        
+        # instance = HTMLElement(data)
+        # instance.compiler = self.compiler
+        # return instance
     
     def find_all(self, name, attrs=None):
-        queryset = QuerySet.clone(self.compiler, partial=True)
+        queryset = QuerySet.clone(self.compiler)
         queryset.query = {'tag': name, 'attrs': attrs}
         return queryset
