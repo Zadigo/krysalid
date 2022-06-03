@@ -57,6 +57,7 @@ class BaseTag(NavigationMixin):
     SELF_CLOSING_TAG_ATTRS_TEMPLATE = "<{name} {attrs} />"
     
     def __init__(self, name, attrs, coordinates):
+        self.raw_data = []
         self.name = name
         self.index = 0
         self.coordinates = coordinates
@@ -68,9 +69,11 @@ class BaseTag(NavigationMixin):
     def __repr__(self):
         if self.closing_tag:
             return f"</{self.name}>"
+        
         if self.attrs:
             attrs = ' '.join(self.attrs_as_string())
             return f"<{self.name} {attrs}>"
+        
         return f"<{self.name}>"
         
     def __hash__(self):
@@ -109,6 +112,18 @@ class BaseTag(NavigationMixin):
     @property
     def attrs(self):
         return OrderedDict(self._attrs)
+    
+    @property
+    def is_opening_tag(self):
+        return 'ST' in self.raw_data
+    
+    @property
+    def is_closing_tag(self):
+        return 'ET' in self.raw_data
+    
+    @property
+    def is_data(self):
+        return 'DA' in self.raw_data
     
     def deconstruct(self):
         return self.name, list(self.attrs), self.coordinates
@@ -183,47 +198,47 @@ class ElementData(StringMixin, BaseTag):
         self.data = data
 
 
-class HTMLElement(BaseTag):
-    """From a set of raw values, create a
-    python usable object. Useful for methods
-    that need to return one single tag element"""
+# class HTMLElement(BaseTag):
+#     """From a set of raw values, create a
+#     python usable object. Useful for methods
+#     that need to return one single tag element"""
     
-    def __init__(self, values):
-        if not isinstance(values, list):
-            raise ValueError()
+#     def __init__(self, values):
+#         if not isinstance(values, list):
+#             raise ValueError()
                 
-        self._values = values
-        cached_values = values.copy()
-        self.top_boundary = cached_values.pop(0)
-        bottom_boundary = cached_values.pop(-1)
+#         self._values = values
+#         cached_values = values.copy()
+#         self.top_boundary = cached_values.pop(0)
+#         bottom_boundary = cached_values.pop(-1)
         
-        self._children = cached_values
-        self._content = map(lambda x: 'DA' in x, cached_values)
+#         self._children = cached_values
+#         self._content = map(lambda x: 'DA' in x, cached_values)
         
-        super().__init__(self.top_boundary[1], self.top_boundary[2], self.top_boundary[3])
+#         super().__init__(self.top_boundary[1], self.top_boundary[2], self.top_boundary[3])
 
-    @property
-    def is_data(self):
-        return 'DA' in self.top_boundary
+#     @property
+#     def is_data(self):
+#         return 'DA' in self.top_boundary
     
-    @property
-    def is_tag(self):
-        return 'ST' in self.top_boundary
+#     @property
+#     def is_tag(self):
+#         return 'ST' in self.top_boundary
     
-    @property
-    def is_comment(self):
-        return 'CO' in self.top_boundary
+#     @property
+#     def is_comment(self):
+#         return 'CO' in self.top_boundary
     
-    @property
-    def children(self):
-        from krysalid.queryset import RawQueryset
-        return RawQueryset.clone(self.compiler, data=self._children)
+#     @property
+#     def children(self):
+#         from krysalid.queryset import RawQueryset
+#         return RawQueryset.clone(self.compiler, data=self._children)
         
 
-# div = Tag('div', [], (1, 1))
-# div2 = Tag('div', [], (1, 1))
-# div2.closing_tag = True
-# tags = [div, div2]
-# # print(tags)
-# r = ''.join([tag.__repr__() for tag in tags])
-# print(r)
+# # div = Tag('div', [], (1, 1))
+# # div2 = Tag('div', [], (1, 1))
+# # div2.closing_tag = True
+# # tags = [div, div2]
+# # # print(tags)
+# # r = ''.join([tag.__repr__() for tag in tags])
+# # print(r)

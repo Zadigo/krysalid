@@ -1,5 +1,4 @@
-from regex import D
-
+from itertools import chain
 
 class ItemsIterable:
     """Container that allows optimized iteration
@@ -29,14 +28,17 @@ class ItemsIterable:
         else:
             result = compiler.result_iteration()
             
-        for index, item in enumerate(result):
-            category, name, attrs, coordinates = item
-            instance = compiler.compile_tag(name, attrs, coordinates, category, index)
+        for index, items in enumerate(result):
+            # category, name, attrs, coordinates = item
+            # instance = compiler.compile_tag(name, attrs, coordinates, category, index)
+            instance = compiler.compile_tag(items, index)
+
             if uses_query:
                 # Integrate the raw instance values
                 # to the instance in order for it
                 # to be able to compute it's children tags
                 pass
+            
             yield instance
             
 
@@ -82,7 +84,7 @@ class QuerySet:
     
     def fetch_all(self):
         """Load the result cache with the
-        raw parsed data"""
+        raw parsed data"""            
         if self.result_cache is None:
             self.result_cache = self.iterable_class(self)
     
@@ -104,11 +106,56 @@ class QuerySet:
     def filter(self, *args, **kwargs):
         pass
     
-    def find(self, name, attrs={}):
-        pass
-        
-    def find_all(self, name, attrs={}):
-        pass
+    def find(self, name=None, attrs={}):
+        indexes = []
+        self.fetch_all()
+        for i, tag in enumerate(self.result_cache):
+            if 'ST' in tag and name in tag:
+                indexes.append(i)
+                continue
+            
+            if 'ET' in tag and name in tag:
+                indexes.append(i)
+                break
+
+        return indexes
+        # return self.result_cache[indexes[0]:indexes[1] + 1]
+            
+                        
+    def find_all(self, name=None, attrs={}):
+        indexes = []
+        index = []
+        self.fetch_all()
+        for i, tag in enumerate(self.result_cache):
+            if tag.is_opening_tag and name in tag:
+                index.append(i)
+                continue
+            
+            if tag.is_closing_tag and name in tag:
+                index.append(i)
+                indexes.append(index)
+                index = []
+                continue
+        return indexes
+        # for i, tag in enumerate(self.result_cache):
+        #     if 'ST' in tag and name in tag:
+        #         index.append(i)
+        #         continue
+            
+        #     if 'ET' in tag and name in tag:
+        #         index.append(i)
+        #         indexes.append(index)
+        #         index = []
+        #         continue
+            
+        # print(indexes)
+        # # TODO: Put abiliy o store chain, iterators or generators
+        # # on the queryset so that can be resolved directly
+        # result = chain(*list(map(lambda x: self.result_cache[x[0]:x[1] + 1], indexes)))
+        # return RawQueryset.clone(self.compiler, result)
+        # # queryset = self.clone(self.compiler)
+        # # queryset.result_cache = result
+        # # return queryset
         
     def get_text(self, seperator=None, clean=True):
         pass
@@ -143,7 +190,7 @@ class QuerySet:
 class RawQueryset(QuerySet):
     def __init__(self, compiler, raw_data):
         super().__init__(compiler=compiler)
-        self.raw_data =raw_data
+        self.raw_data = raw_data
         
     @classmethod
     def clone(cls, compiler, data):

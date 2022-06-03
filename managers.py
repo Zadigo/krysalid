@@ -1,5 +1,4 @@
 from krysalid.queryset import QuerySet
-from krysalid.html_tags import HTMLElement
 from krysalid.utils import compare_attributes
 import itertools
 
@@ -21,11 +20,11 @@ class Manager:
     
     @property   
     def head(self):
-        pass
+        return self.compiler.get_tag('head')
 
     @property
     def body(self):
-        pass
+        return self.compiler.body
     
     def filter(self, *args, **kwargs):
         pass

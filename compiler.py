@@ -154,7 +154,9 @@ class BaseCompiler:
         
         return top_index, bottom_index
     
-    def compile_tag(self, name, attrs, coordinates, category, index):
+    # def compile_tag(self, name, attrs, coordinates, category, index):
+    def compile_tag(self, items, index):
+        category, name, attrs, coordinates = items
         tag_class = self.detect_category(category)
         if tag_class.is_string:
             instance = tag_class(name)
@@ -166,6 +168,7 @@ class BaseCompiler:
             if category == 'ET':
                 instance.closing_tag = True
         instance.index = index
+        instance.raw_data = items
         return instance
     
     # def build_attrs(self, attrs):
