@@ -4,10 +4,9 @@ from functools import cached_property
 from html.parser import HTMLParser
 from io import StringIO, TextIOWrapper
 
-from pydantic import PathNotExistsError
-
-from krysalid.compiler import Compiler
-from krysalid.managers import Manager
+from compiler import Compiler
+from exceptions import PathNotExistsError
+from managers import Manager
 
 
 class Algorithm(HTMLParser):    

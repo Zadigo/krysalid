@@ -13,6 +13,8 @@ def compare_attributes(tag_attrs, attrs):
     keys = attrs.keys()
     
     tag_keys = map(lambda x: x[0], tag_attrs)
+    # If the tag does not have the key in
+    # question, skip the comparision
     missing_keys = keys - tag_keys
     
     if missing_keys:

@@ -1,5 +1,5 @@
+from collections import OrderedDict
 from functools import total_ordering
-from typing import OrderedDict
 
 
 class NavigationMixin:

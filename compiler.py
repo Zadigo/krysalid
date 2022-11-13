@@ -2,8 +2,8 @@ from collections import Counter, OrderedDict
 from functools import cached_property, lru_cache
 from io import StringIO
 
-from krysalid.html_tags import ElementData, NewLine, Tag
-from krysalid.utils import compare_attributes
+from html_tags import ElementData, NewLine, Tag
+from utils import compare_attributes
 
 
 class Cache:
@@ -40,6 +40,8 @@ class BaseCompiler:
     
     # @lru_cache(maxsize=100)
     def map_indexes_by_attributes(self, attrs):
+        """Map the indexes of each tags based
+        on a matching attribute regardless of their name"""
         top_limits = []
         lower_limits = []
         
@@ -51,24 +53,17 @@ class BaseCompiler:
                 counter.update([tag[1]])
                 top_limits.append(i)
                 continue
-            
-            # if tag[1] in counter.keys() and 'ET' in tag:
-            #     counter.subtract([tag[1]])
-            
-
+                        
             if counter[tag[1]] == 1 and 'ET' in tag:
                 lower_limits.append(i + 1)
                 counter.subtract([tag[1]])
 
-        indexes = []
-        for i in range(len(top_limits)):
-            indexes.append((top_limits[i], lower_limits[i]))
-        return indexes
+        return [(top_limits[i], lower_limits[i]) for i in range(len(top_limits))]
     
     @lru_cache(maxsize=100)
     def map_indexes_by_tag_name(self, name):
         """Map the indexes of all the tags that
-        match the given tag name"""        
+        match the given name"""        
         top_limits = []
         lower_limits = []
         for i, tag in enumerate(self.result_iteration()):
@@ -139,36 +134,47 @@ class BaseCompiler:
     def get_top_lower_index(self, name):
         """From a given tag name, get the top and lower
         index (start and end tag) in the result set of the
-        first matching element which would then allow us to 
-        slice it out of the result set"""
+        *first matching* element which would then allow us to 
+        slice it out"""
         tags = self.result_iteration()
         for tag in tags:
             if name in tag:
                 break
         top_index = tags.index(tag)
         
-        for tag in tags:
+        bottom_index = 0
+        counter = Counter({name: 0})
+        for i, tag in enumerate(tags):
+            if name in tag and 'ST' in tag:
+                counter.update([name])
+
             if name in tag and 'ET' in tag:
-                break
-        bottom_index = tags.index(tag) + 1
-        
-        return top_index, bottom_index
+                bottom_index = i
+                counter.subtract([name])
+
+                if counter.get(name) <= 0:
+                    break
+
+        return top_index, bottom_index + 1
     
     # def compile_tag(self, name, attrs, coordinates, category, index):
     def compile_tag(self, items, index):
+        """Transfoms a tag-tuple in a Python object"""
         category, name, attrs, coordinates = items
         tag_class = self.detect_category(category)
+        
         if tag_class.is_string:
             instance = tag_class(name)
         else:
-            # attrs = self.build_attrs(attrs)
             attrs = OrderedDict(attrs)
             
             instance = tag_class(name, attrs, coordinates)
             if category == 'ET':
                 instance.closing_tag = True
+        
         instance.index = index
         instance.raw_data = items
+        
         return instance
     
     # def build_attrs(self, attrs):
@@ -194,13 +200,15 @@ class BaseCompiler:
         full HTML page"""
         if not '<html>' in page and not '<body>' in page:
             page = f'<html><body>{page}</body></html>'
-        page = self.format_page(page)
+        # FIXME: Bug with lxml
+        # page = self.format_page(page)
         self.clean_page = page
     
     def result_iteration(self):
         """Returns the raw parsed elements on
-        the page as a list of tuples: [(category, tag name, 
-        attributes, coordinates)]"""
+        the page as a list of tuples: 
+        [(category, tag name, attributes, coordinates)]
+        """
         return self.page_parser.get_result_cache
     
     
@@ -255,9 +263,9 @@ class Compiler(BaseCompiler):
                         continue
                 yield tag
 
-    def get_all_text(self, newline=True):
-        buffer = StringIO(newline='\n')
-        for item in self.get_data(newlines=newline):
-            buffer.write(item[1])
-        buffer.seek(0)
-        return buffer.read()
+    # def get_all_text(self, newline=True):
+    #     buffer = StringIO(newline='\n')
+    #     for item in self.get_data(newlines=newline):
+    #         buffer.write(item[1])
+    #     buffer.seek(0)
+    #     return buffer.read()

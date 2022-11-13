@@ -84,6 +84,5 @@ class Query(Expression):
 from krysalid.html_tags import Tag
 div = Tag('div', {'id': 'google'}, (1, 1))
 q = Query('div', {'id': 'kendall', 'class': 'google'})
-# print(q.compile(div))
 print(q.compile_raw(('div', [('id', 'Kendall')], (1, 1))))
 print(q)
