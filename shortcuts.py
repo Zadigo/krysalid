@@ -20,8 +20,11 @@ class BaseExtractor:
         return iter(self.get_queryset())
     
     def get_queryset(self):
-        return []
-        
+        return self.clean([])
+
+    def clean(self, queryset=None, data=None):
+        return queryset or data
+
 
 class ImageExtractor(BaseExtractor):
     def get_queryset(self):
@@ -47,4 +50,7 @@ class TableExtractor(BaseExtractor):
     def get_queryset(self):
         queryset = QuerySet.clone(self.compiler, partial=True)
         queryset.query = {'tag': 'table'}
-        return queryset
+        return self.clean(queryset=queryset)
+
+    def clean(self, queryset=None, data=None):
+        return super().clean(queryset, data)

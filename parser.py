@@ -1,8 +1,6 @@
 import pathlib
-from encodings import utf_8
 from functools import cached_property
 from html.parser import HTMLParser
-from io import StringIO, TextIOWrapper
 
 from compiler import Compiler
 from exceptions import PathNotExistsError

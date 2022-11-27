@@ -48,7 +48,7 @@ class NavigationMixin:
         current element"""
 
 
-class BaseTag(NavigationMixin):
+class BaseTag:
     is_string = False
     
     TAG_ATTRS_TEMPLATE = "<{name} {attrs}>{content}</{name}>"
@@ -144,6 +144,7 @@ class BaseTag(NavigationMixin):
 class Tag(BaseTag):
     pass
 
+
 @total_ordering
 class StringMixin:    
     is_string = True
@@ -198,45 +199,28 @@ class ElementData(StringMixin, BaseTag):
         self.data = data
 
 
-# class HTMLElement(BaseTag):
-#     """From a set of raw values, create a
-#     python usable object. Useful for methods
-#     that need to return one single tag element"""
-    
-#     def __init__(self, values):
-#         if not isinstance(values, list):
-#             raise ValueError()
-                
-#         self._values = values
-#         cached_values = values.copy()
-#         self.top_boundary = cached_values.pop(0)
-#         bottom_boundary = cached_values.pop(-1)
-        
-#         self._children = cached_values
-#         self._content = map(lambda x: 'DA' in x, cached_values)
-        
-#         super().__init__(self.top_boundary[1], self.top_boundary[2], self.top_boundary[3])
+class HTMLElementBlock(NavigationMixin):
+    """Represents a single HTML tag section 
+    and its children. This is useful for representing
+    a block of html elements together"""
+    def __init__(self, tag_list):
+        self.tag_name = None
+        self.parent = None
+        self._tag_list = tag_list
 
-#     @property
-#     def is_data(self):
-#         return 'DA' in self.top_boundary
-    
-#     @property
-#     def is_tag(self):
-#         return 'ST' in self.top_boundary
-    
-#     @property
-#     def is_comment(self):
-#         return 'CO' in self.top_boundary
-    
-#     @property
-#     def children(self):
-#         from krysalid.queryset import RawQueryset
-#         return RawQueryset.clone(self.compiler, data=self._children)
-        
+    @classmethod
+    def prepare_parent(cls, tag_list, parent_name):
+        pass
 
-# # div = Tag('div', [], (1, 1))
-# # div2 = Tag('div', [], (1, 1))
+"""
+HTMLElementBlock[(html) --> children parent <-- HTMLElementBlock[(body) HTMLElementBlock[(div)] <--> HTMLElementBlock[(div)]]]
+"""
+
+div = Tag('div', [], (1, 1))
+data = ElementData('Kendall')
+div2 = Tag('div', [], (1, 1))
+
+h = HTMLElementBlock([div, data, div2])
 # # div2.closing_tag = True
 # # tags = [div, div2]
 # # # print(tags)

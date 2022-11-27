@@ -22,7 +22,7 @@ class Manager:
 
     @property
     def head(self):
-        return self.compiler.get_tag('head')
+        return self.compiler.head 
 
     @property
     def body(self):
@@ -85,7 +85,7 @@ class Manager:
         # instance.compiler = self.compiler
         # return instance
 
-    def find_all(self, name, attrs={}):
+    def find_all(self, name=None, attrs={}):
         queryset = QuerySet.clone(self.compiler)
         queryset.query = {'tag': name, 'attrs': attrs}
         return queryset

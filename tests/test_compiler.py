@@ -1,6 +1,7 @@
 import unittest
 from krysalid.compiler import BaseCompiler
 from krysalid.parser import HTMLPageParser
+from krysalid.html_tags import Tag
 
 with open('tests/html/simple.html', mode='r') as f:
     parser = HTMLPageParser(f.read())
@@ -34,6 +35,12 @@ class TestCompiler(unittest.TestCase):
             with self.subTest(item=item):
                 self.assertIsInstance(item, tuple)
                 self.assertIn(item[0], ['ST', 'ET', 'DA'])
+
+    def test_tag_compilation(self):
+        tag_tuple = ('ST', 'div', [('id', 'google')], (19, 8))
+        obj = self.compiler.compile_tag(tag_tuple, 0)
+        self.assertIsInstance(obj, Tag)
+        self.assertTrue(obj == 'div')
 
 
 if __name__ == '__main__':

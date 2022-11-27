@@ -1,4 +1,5 @@
 from itertools import chain
+from collections import Counter
 
 class ItemsIterable:
     """Container that allows optimized iteration
@@ -28,10 +29,10 @@ class ItemsIterable:
         else:
             result = compiler.result_iteration()
             
-        for index, items in enumerate(result):
+        for index, tag_tuple in enumerate(result):
             # category, name, attrs, coordinates = item
             # instance = compiler.compile_tag(name, attrs, coordinates, category, index)
-            instance = compiler.compile_tag(items, index)
+            instance = compiler.compile_tag(tag_tuple, index)
 
             if uses_query:
                 # Integrate the raw instance values
@@ -88,15 +89,31 @@ class QuerySet:
         if self.result_cache is None:
             self.result_cache = self.iterable_class(self)
     
-    # ######################################
-    # Queryset methods are run on the tag  #
-    # instances directly and not on the    #
-    # raw values                           #
-    # #################################### #
+    # ##################################### #
+    #  Queryset methods are run on the tag  #
+    #  instances directly and not on the    #
+    #  raw values                           #
+    # ##################################### #
         
     def first(self):
         pass
-    
+        # self.fetch_all()
+        # candidate = []
+        # counter = Counter()
+        # for item in self.result_cache:
+        #     if not item.is_closing_tag:
+        #         counter.update([item.name])
+        #         candidate.append(item)
+
+        #     if item.is_closing_tag:
+        #         counter.subtract([item.name])
+        #         candidate.append(item)
+
+        #         if counter.get(item.name) == 0:
+        #             break
+
+        # return candidate
+        
     def last(self):
         pass
             
@@ -107,21 +124,25 @@ class QuerySet:
         pass
     
     def find(self, name=None, attrs={}):
-        indexes = []
-        self.fetch_all()
-        for i, tag in enumerate(self.result_cache):
-            if 'ST' in tag and name in tag:
-                indexes.append(i)
-                continue
+        """Find the first matching tag with
+        the given name and/or attrs"""
+        pass
+        # self.fetch_all()
+        # counter = Counter()
+        # for tag in self.result_cache:
+        # indexes = []
+        # for i, tag in enumerate(self.result_cache):
+        #     if 'ST' in tag and name in tag:
+        #         indexes.append(i)
+        #         continue
             
-            if 'ET' in tag and name in tag:
-                indexes.append(i)
-                break
+        #     if 'ET' in tag and name in tag:
+        #         indexes.append(i)
+        #         break
 
-        return indexes
+        # return indexes
         # return self.result_cache[indexes[0]:indexes[1] + 1]
-            
-                        
+                          
     def find_all(self, name=None, attrs={}):
         indexes = []
         index = []
@@ -158,7 +179,22 @@ class QuerySet:
         # # return queryset
         
     def get_text(self, seperator=None, clean=True):
-        pass
+        """Return the text contained in the tags
+        within the queryset"""
+        text = []
+        self.fetch_all()
+        for item in self.result_cache:
+            if item.is_data:
+                if clean:
+                    result = item.data.strip()
+                    if result != '':
+                        text.append(result)
+                else:
+                    text.append(item.data)
+
+        if seperator is None:
+            return text
+        return f'{seperator}'.join(text)
     
     def distinct(self):
         pass
@@ -173,17 +209,33 @@ class QuerySet:
         pass
     
     def exists(self):
-        """Determines if thee queryset
+        """Determines if the queryset
         has elements"""
         return len(self) > 0
     
     def contains(self, name):
-        pass
+        """Checks if the queryset contains
+        a given tag by name"""
+        result = False
+        self.fetch_all()
+        for item in self.result_cache:
+            if item == name and not item.is_closing_tag:
+                result = True
+                break
+        return result
     
     def explain(self):
-        pass
+        """Text representation of the items
+        contained in the queryset"""
+        self.fetch_all()
+        text_format = '{index}: {name} - closing: {closing}'
+        for i, item in enumerate(self.result_cache):
+            print(text_format.format(index=i, name=item.name, closing=item.is_closing_tag))
     
     def update_attribute(self, name, attr, value):
+        pass
+
+    def annotate(self, *kwargs):
         pass
 
 
